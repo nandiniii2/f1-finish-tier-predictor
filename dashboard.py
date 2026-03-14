@@ -94,7 +94,7 @@ st.markdown("""
         
         /* Background for main area */
         .stApp {
-            background-image: linear-gradient(rgba(17, 17, 21, 0.85), rgba(17, 17, 21, 0.95)), url("https://images.unsplash.com/photo-1541344999738-41f237f37435?q=80&w=3432&auto=format&fit=crop");
+            background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("https://images.unsplash.com/photo-1541344999738-41f237f37435?q=80&w=3432&auto=format&fit=crop");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -168,6 +168,25 @@ st.markdown("""
             border-radius: 4px !important;
             padding: 4px 8px !important;
             font-size: 0.9rem !important;
+        }
+
+        /* Enforce bright white text for input labels (Selectbox, Sliders, Number Inputs) */
+        label[data-testid="stWidgetLabel"] p {
+            color: #FFFFFF !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        /* Make sure general paragraph text in the sidebar or tools is readable */
+        p {
+            color: #e6edf3 !important;
+        }
+        
+        /* Dropdown selection text color */
+        div[data-baseweb="select"] div {
+            color: #FFFFFF !important;
         }
     </style>
 """, unsafe_allow_html=True)
