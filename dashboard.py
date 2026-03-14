@@ -5,6 +5,9 @@ import xgboost as xgb
 import matplotlib.pyplot as plt
 import joblib
 
+import urllib.request
+import base64
+
 # === Streamlit Page Setup ===
 # Must be the very first Streamlit command
 st.set_page_config(
@@ -12,6 +15,17 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+@st.cache_data
+def get_base64_of_bin_url(url):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        return base64.b64encode(urllib.request.urlopen(req).read()).decode()
+    except Exception:
+        return ""
+
+bg_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/F1_2019_Schloss_Solitude_06.jpg/1920px-F1_2019_Schloss_Solitude_06.jpg"
+bg_b64 = get_base64_of_bin_url(bg_url)
 
 # === Inject Custom CSS for Premium F1 Aesthetic ===
 st.markdown("""
@@ -91,16 +105,24 @@ st.markdown("""
             font-size: 1.5rem;
             margin-top: 1rem;
         }
-        
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown(f"""
+    <style>
         /* Background for main area */
-        .stApp {
-            background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("https://images.unsplash.com/photo-1541344999738-41f237f37435?q=80&w=3432&auto=format&fit=crop");
+        .stApp {{
+            background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("data:image/jpeg;base64,{bg_b64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-color: #111115 !important; 
-        }
+        }}
+    </style>
+""", unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
         /* Expander/Tabs styling */
         .stTabs [data-baseweb="tab-list"] {
             gap: 24px;
