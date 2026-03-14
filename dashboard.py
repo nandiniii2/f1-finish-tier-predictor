@@ -117,9 +117,54 @@ st.markdown("""
             color: #FF1801 !important;
         }
         
-        /* Slider styling */
-        .stSlider [data-baseweb="slider"] div {
-            background-color: #FF1801 !important;
+        /* Elegant Slider Styling */
+        div[data-baseweb="slider"] {
+            margin-top: 10px !important;
+            padding-bottom: 20px !important;
+        }
+        
+        /* The unselected track (dark gray) */
+        div[data-baseweb="slider"] > div > div:first-child {
+            background-color: #2D2D36 !important; 
+            height: 8px !important;
+            border-radius: 4px !important;
+        }
+
+        /* The selected fill area (F1 Red gradient) */
+        div[data-baseweb="slider"] > div > div:nth-child(2) {
+            background: linear-gradient(90deg, #b81200 0%, #FF1801 100%) !important;
+            height: 8px !important;
+            border-radius: 4px !important;
+        }
+
+        /* The draggable thumb handle */
+        div[data-baseweb="slider"] > div > div:nth-child(3) {
+            height: 20px !important;
+            width: 20px !important;
+            background-color: #ffffff !important;
+            border: 3px solid #FF1801 !important;
+            box-shadow: 0 0 10px rgba(255, 24, 1, 0.6) !important;
+            border-radius: 50% !important;
+            transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+        }
+        div[data-baseweb="slider"] > div > div:nth-child(3):hover {
+            transform: scale(1.2) !important;
+            box-shadow: 0 0 15px rgba(255, 24, 1, 0.9) !important;
+            cursor: grab !important;
+        }
+        div[data-baseweb="slider"] > div > div:nth-child(3):active {
+            cursor: grabbing !important;
+        }
+
+        /* Tooltip style */
+        div[data-baseweb="tooltip"] {
+            background-color: #15151e !important;
+            border: 1px solid #FF1801 !important;
+            color: white !important;
+            font-family: 'Orbitron', sans-serif !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            font-size: 0.9rem !important;
         }
     </style>
 """, unsafe_allow_html=True)
