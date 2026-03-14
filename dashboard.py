@@ -261,7 +261,7 @@ with tab1:
                 # Confidence Bar Chart Customization
                 st.markdown('<div class="section-header">MODEL CONFIDENCE DISTRIBUTIONS</div>', unsafe_allow_html=True)
                 
-                fig, ax = st.subplots(figsize=(8, 3))
+                fig, ax = plt.subplots(figsize=(8, 3))
                 
                 # Plot with transparent background that integrates with dark mode
                 fig.patch.set_facecolor('#111115')
