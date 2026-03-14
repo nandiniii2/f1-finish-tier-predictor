@@ -10,7 +10,6 @@ import joblib
 st.set_page_config(
     page_title="F1 Finish Tier Predictor",
     layout="wide",
-    page_icon="🏎️",
     initial_sidebar_state="expanded"
 )
 
@@ -95,6 +94,10 @@ st.markdown("""
         
         /* Background for main area */
         .stApp {
+            background-image: linear-gradient(rgba(17, 17, 21, 0.85), rgba(17, 17, 21, 0.95)), url("https://images.unsplash.com/photo-1541344999738-41f237f37435?q=80&w=3432&auto=format&fit=crop");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             background-color: #111115 !important; 
         }
 
@@ -205,7 +208,7 @@ st.markdown('<h1 class="title-text">Formula 1 Race Strategy AI</h1>', unsafe_all
 st.markdown('<p class="subtitle-text">Advanced Predictive Modeling for Finish Tier Outcomes</p>', unsafe_allow_html=True)
 
 # Main container layout
-tab1, tab2 = st.tabs(["🏎️ PREDICTION ENGINE", "📊 HOW IT WORKS"])
+tab1, tab2 = st.tabs(["PREDICTION ENGINE", "HOW IT WORKS"])
 
 with tab1:
     col1, col2 = st.columns([1, 2.5], gap="large")
@@ -275,9 +278,9 @@ with tab1:
                 proba = model.predict_proba(input_row)[0]
                 
                 pred_map = {
-                    0: "🏆 PODIUM FINISH (1–3)",
-                    1: "🎯 MIDFIELD FINISH (4–10)",
-                    2: "🚦 BACKMARKER FINISH (11+)"
+                    0: "PODIUM FINISH (1–3)",
+                    1: "MIDFIELD FINISH (4–10)",
+                    2: "BACKMARKER FINISH (11+)"
                 }
                 finish_colors = ["#00e676", "#ffa726", "#ff5252"]
                 
@@ -346,7 +349,7 @@ with tab1:
                 st.write("")
         else:
             # Idle state visual
-            st.info("👈 Enter the race telemetry parameters on the left and click **RUN AI SIMULATION** to calculate the projected finish tier.")
+            st.info("Enter the race telemetry parameters on the left and click **RUN AI SIMULATION** to calculate the projected finish tier.")
 
 with tab2:
     st.markdown('<div class="section-header">ABOUT THE MODEL</div>', unsafe_allow_html=True)
