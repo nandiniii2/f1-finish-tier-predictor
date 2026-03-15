@@ -230,10 +230,11 @@ def load_data():
     # Circuit Mapping
     circuits_df = pd.read_csv("data/raw/circuits.csv")
     circuit_dict = dict(zip(circuits_df['name'], circuits_df['circuitId']))
+    circuit_locs = circuits_df.set_index('circuitId')[['lat', 'lng', 'location', 'country']].to_dict('index')
     
-    return driver_dict, status_dict, circuit_dict
+    return driver_dict, status_dict, circuit_dict, circuit_locs
 
-driver_dict, status_dict, circuit_dict = load_data()
+driver_dict, status_dict, circuit_dict, circuit_locs = load_data()
 
 @st.cache_resource
 def load_model():
@@ -264,6 +265,12 @@ with tab1:
 
         circuit_label = st.selectbox("Circuit", list(circuit_dict.keys()), index=list(circuit_dict.keys()).index("Silverstone Circuit") if "Silverstone Circuit" in circuit_dict else 0)
         circuit_id = circuit_dict[circuit_label]
+        
+        # --- DYNAMIC CIRCUIT MAP ---
+        loc_data = circuit_locs[circuit_id]
+        st.markdown(f"<p style='margin-top: -10px; font-size: 0.9rem; color: #aaa;'>📍 {loc_data['location']}, {loc_data['country']}</p>", unsafe_allow_html=True)
+        map_df = pd.DataFrame([{'lat': loc_data['lat'], 'lon': loc_data['lng']}])
+        st.map(map_df, zoom=11, color='#FF1801', use_container_width=True)
 
         status_label = st.selectbox("Finish Status", list(status_dict.keys()), index=list(status_dict.keys()).index("Finished") if "Finished" in status_dict else 0)
         status_id = status_dict[status_label]
@@ -363,6 +370,32 @@ with tab1:
                 
                 st.markdown(bars_html, unsafe_allow_html=True)
                 
+                # --- WHAT-IF SCENARIOS ---
+                st.markdown('<div class="section-header" style="margin-top: 2rem;">WHAT-IF SCENARIOS</div>', unsafe_allow_html=True)
+                
+                # Scenario 1: Pole Position
+                alt_input_1 = input_row.copy()
+                alt_input_1.loc[0, 'grid'] = 1
+                alt_proba_1 = model.predict_proba(alt_input_1)[0]
+                
+                # Scenario 2: Perfect Pit Strategy
+                alt_input_2 = input_row.copy()
+                alt_input_2.loc[0, 'num_pit_stops'] = 1
+                alt_input_2.loc[0, 'total_pit_time'] = 24000
+                alt_proba_2 = model.predict_proba(alt_input_2)[0]
+                
+                st.markdown(f"""
+                <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #FF1801; margin-bottom: 1rem;'>
+                    <strong style='color: white;'>🏎️ Scenario 1: What if they started on Pole (P1)?</strong><br>
+                    <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_1[0]*100:.1f}%</b>
+                </div>
+                
+                <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffa726;'>
+                    <strong style='color: white;'>🔧 Scenario 2: What if they executed a perfect 1-Stop strategy?</strong><br>
+                    <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_2[0]*100:.1f}%</b>
+                </div>
+                """, unsafe_allow_html=True)
+                
                 st.write("")
         else:
             # Idle state visual
@@ -373,7 +406,33 @@ with tab2:
     st.markdown("""
     This advanced predictive engine uses an **XGBoost Classifier** trained on historical Formula 1 telemetry, lap time variability, pit stop strategies, and grid configurations.
     
-    ### Key Features Analzyed:
+    ### Model Architecture
+    - **Algorithm**: XGBoost (Extreme Gradient Boosting)
+    - **Classification Tiers**: Podium (1-3), Midfield (4-10), Backmarker (11+)
+    - **Features**: 100+ encoded features including driver IDs, circuit IDs, and normalized telemetry stats.
+    """)
+    
+    st.markdown("### 📊 Model Explainability (Feature Importance)")
+    st.markdown("The following features are the primary global drivers of the model's predictions, derived directly from the XGBoost feature weights:")
+    
+    # Calculate and display top 5 features
+    importances = model.feature_importances_
+    features = model.feature_names_in_
+    top_indices = np.argsort(importances)[::-1][:5]
+    
+    html_list = "<ul style='color: #e6edf3; font-size: 1.1rem;'>"
+    for idx in top_indices:
+        feat = features[idx]
+        clean_name = feat.replace('_', ' ').title()
+        if 'Id ' in clean_name:
+            clean_name = " ".join(clean_name.split('Id '))
+        weight = importances[idx] * 100
+        html_list += f"<li style='margin-bottom: 0.5rem;'><strong style='color: #FF1801;'>{clean_name}</strong>: {weight:.1f}% relational importance</li>"
+    html_list += "</ul>"
+    
+    st.markdown(html_list, unsafe_allow_html=True)
+    st.markdown("""
+    ### Key Features Analyzed:
     * **Grid Position**: Where the driver starts heavily influences their finish trajectory.
     * **Lap Time Variance**: A measure of consistency. Drivers with highly variable lap times generally struggle holding track position.
     * **Pit Strategy**: Total time spent in the pits and the number of stops affect race delta times.
