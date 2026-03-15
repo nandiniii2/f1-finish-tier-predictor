@@ -22,7 +22,7 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-bg_b64 = get_base64_of_bin_file('assets/f1_multi_bg.jpg')
+bg_b64 = get_base64_of_bin_file('assets/f1_2010_grid.jpg')
 
 # === Inject Custom CSS for Premium F1 Aesthetic ===
 st.markdown("""
