@@ -348,46 +348,21 @@ with tab1:
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Confidence Bar Chart Customization
+                # Custom HTML/CSS Glowing Progress Bars
                 st.markdown('<div class="section-header">MODEL CONFIDENCE DISTRIBUTIONS</div>', unsafe_allow_html=True)
                 
-                fig, ax = plt.subplots(figsize=(8, 3))
+                labels = ["PODIUM (1-3)", "MIDFIELD (4-10)", "BACKMARKER (11+)"]
+                colors = ["#00e676", "#ffa726", "#ff5252"]
                 
-                # Plot with transparent background that integrates with dark mode
-                fig.patch.set_facecolor('#111115')
-                ax.set_facecolor('#111115')
+                bars_html = "<div style='display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem 0;'>"
                 
-                bars = ax.bar(["PODIUM (1-3)", "MIDFIELD (4-10)", "BACKMARKER (11+)"], 
-                              proba, 
-                              color=['#00e676', '#ffa726', '#ff5252'], 
-                              edgecolor='#111115',
-                              linewidth=2,
-                              width=0.6)
-                              
-                ax.set_ylim(0, 1)
+                for label, prob, color in zip(labels, proba, colors):
+                    percent = prob * 100
+                    bars_html += f"<div style='margin-bottom: 1.5rem;'><div style='display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-family: \"Titillium Web\", sans-serif;'><span style='color: white; font-weight: 600; font-size: 1.1rem; letter-spacing: 1px;'>{label}</span><span style='color: {color}; font-family: \"Orbitron\", sans-serif; font-weight: bold; font-size: 1.1rem; text-shadow: 0 0 10px {color}80;'>{percent:.1f}%</span></div><div style='width: 100%; height: 16px; background-color: rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);'><div style='width: {percent}%; height: 100%; background-color: {color}; border-radius: 8px; box-shadow: 0 0 15px {color}, 0 0 5px {color}; transition: width 1.5s ease-out;'></div></div></div>"
+                bars_html += "</div>"
                 
-                # Styling the plot purely for aesthetics
-                ax.tick_params(axis='x', colors='white', labelsize=10, labelrotation=0)
-                ax.tick_params(axis='y', left=False, labelleft=False) # Hide y axis
+                st.markdown(bars_html, unsafe_allow_html=True)
                 
-                ax.spines['bottom'].set_color('#38383f')
-                ax.spines['bottom'].set_linewidth(2)
-                ax.spines['left'].set_color('none')
-                ax.spines['top'].set_color('none')
-                ax.spines['right'].set_color('none')
-
-                for bar, prob in zip(bars, proba):
-                    ax.text(bar.get_x() + bar.get_width()/2, 
-                            bar.get_height() + 0.05, 
-                            f"{prob*100:.1f}%",
-                            ha='center', 
-                            color='white', 
-                            fontweight='bold',
-                            fontsize=14,
-                            family='Orbitron')
-                            
-                plt.tight_layout()
-                st.pyplot(fig, use_container_width=True)
                 st.write("")
         else:
             # Idle state visual
