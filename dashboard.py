@@ -246,7 +246,7 @@ def load_metadata():
     return pd.read_csv("notebooks/sample_input_format.csv")
 
 # === Main UI App ===
-st.markdown('<h1 class="title-text">Formula 1 Race Strategy AI</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="title-text">Formula 1 Predictive Model</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle-text">Advanced Predictive Modeling for Finish Tier Outcomes</p>', unsafe_allow_html=True)
 
 # Main container layout
@@ -291,7 +291,7 @@ with tab1:
         st.write("")
         st.write("")
         
-        predict_button = st.button("RUN AI SIMULATION")
+        predict_button = st.button("RUN ML MODEL")
         
         if predict_button:
             with st.spinner('Analyzing telemetry and executing race simulation...'):
@@ -391,7 +391,7 @@ with tab1:
                 st.write("")
         else:
             # Idle state visual
-            st.info("Enter the race telemetry parameters on the left and click **RUN AI SIMULATION** to calculate the projected finish tier.")
+            st.info("Enter the race telemetry parameters on the left and click **RUN ML MODEL** to calculate the projected finish tier.")
 
 with tab2:
     st.markdown('<div class="section-header">ABOUT THE MODEL</div>', unsafe_allow_html=True)
