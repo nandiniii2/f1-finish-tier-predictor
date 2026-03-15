@@ -4,6 +4,8 @@ import numpy as np
 import xgboost as xgb
 import matplotlib.pyplot as plt
 import joblib
+import json
+import os
 
 import urllib.request
 import base64
@@ -232,9 +234,12 @@ def load_data():
     circuit_dict = dict(zip(circuits_df['name'], circuits_df['circuitId']))
     circuit_locs = circuits_df.set_index('circuitId')[['lat', 'lng', 'location', 'country']].to_dict('index')
     
-    return driver_dict, status_dict, circuit_dict, circuit_locs
+    with open('assets/circuit_mapping.json', 'r') as f:
+        circuit_svgs = json.load(f)
+        
+    return driver_dict, status_dict, circuit_dict, circuit_locs, circuit_svgs
 
-driver_dict, status_dict, circuit_dict, circuit_locs = load_data()
+driver_dict, status_dict, circuit_dict, circuit_locs, circuit_svgs = load_data()
 
 @st.cache_resource
 def load_model():
@@ -266,11 +271,9 @@ with tab1:
         circuit_label = st.selectbox("Circuit", list(circuit_dict.keys()), index=list(circuit_dict.keys()).index("Silverstone Circuit") if "Silverstone Circuit" in circuit_dict else 0)
         circuit_id = circuit_dict[circuit_label]
         
-        # --- DYNAMIC CIRCUIT MAP ---
+        # --- CIRCUIT SELECTION ---
         loc_data = circuit_locs[circuit_id]
-        st.markdown(f"<p style='margin-top: -10px; font-size: 0.9rem; color: #aaa;'>📍 {loc_data['location']}, {loc_data['country']}</p>", unsafe_allow_html=True)
-        map_df = pd.DataFrame([{'lat': loc_data['lat'], 'lon': loc_data['lng']}])
-        st.map(map_df, zoom=11, color='#FF1801', use_container_width=True)
+        st.markdown(f"<p style='margin-top: -10px; font-size: 0.9rem; color: #aaa;'>{loc_data['location']}, {loc_data['country']}</p>", unsafe_allow_html=True)
 
         status_label = st.selectbox("Finish Status", list(status_dict.keys()), index=list(status_dict.keys()).index("Finished") if "Finished" in status_dict else 0)
         status_id = status_dict[status_label]
@@ -386,15 +389,33 @@ with tab1:
                 
                 st.markdown(f"""
                 <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #FF1801; margin-bottom: 1rem;'>
-                    <strong style='color: white;'>🏎️ Scenario 1: What if they started on Pole (P1)?</strong><br>
+                    <strong style='color: white;'>Scenario 1: What if they started on Pole (P1)?</strong><br>
                     <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_1[0]*100:.1f}%</b>
                 </div>
                 
                 <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffa726;'>
-                    <strong style='color: white;'>🔧 Scenario 2: What if they executed a perfect 1-Stop strategy?</strong><br>
+                    <strong style='color: white;'>Scenario 2: What if they executed a perfect 1-Stop strategy?</strong><br>
                     <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_2[0]*100:.1f}%</b>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # --- CIRCUIT LAYOUT MAP ---
+                st.markdown('<div class="section-header" style="margin-top: 2rem;">CIRCUIT LAYOUT</div>', unsafe_allow_html=True)
+                svg_path = circuit_svgs.get(str(circuit_id))
+                if svg_path and os.path.exists(svg_path):
+                    with open(svg_path, 'r') as svg_file:
+                        svg_content = svg_file.read()
+                    
+                    # Wrap SVG in a responsive container with a subtle background to improve visibility and layout
+                    st.markdown(f"""
+                    <div style='width: 100%; height: auto; max-height: 250px; display: flex; justify-content: center; align-items: center; padding: 20px; background: rgba(0,0,0,0.2)'>
+                        <div style='width: 80%; height: 100%;'>
+                            {svg_content}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("<p style='color: #aaa; text-align: center;'>Circuit map not available</p>", unsafe_allow_html=True)
                 
                 st.write("")
         else:
@@ -404,23 +425,27 @@ with tab1:
 with tab2:
     st.markdown('<div class="section-header">ABOUT THE MODEL</div>', unsafe_allow_html=True)
     st.markdown("""
-    This advanced predictive engine uses an **XGBoost Classifier** trained on historical Formula 1 telemetry, lap time variability, pit stop strategies, and grid configurations.
+    <div style='color: #d1d5db;'>
+    This advanced predictive engine uses an <strong>XGBoost Classifier</strong> trained on historical Formula 1 telemetry, lap time variability, pit stop strategies, and grid configurations.
     
-    ### Model Architecture
-    - **Algorithm**: XGBoost (Extreme Gradient Boosting)
-    - **Classification Tiers**: Podium (1-3), Midfield (4-10), Backmarker (11+)
-    - **Features**: 100+ encoded features including driver IDs, circuit IDs, and normalized telemetry stats.
-    """)
+    <h3 style='color: white; margin-top: 1.5rem;'>Model Architecture</h3>
+    <ul>
+        <li><strong>Algorithm</strong>: XGBoost (Extreme Gradient Boosting)</li>
+        <li><strong>Classification Tiers</strong>: Podium (1-3), Midfield (4-10), Backmarker (11+)</li>
+        <li><strong>Features</strong>: 100+ encoded features including driver IDs, circuit IDs, and normalized telemetry stats.</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("### 📊 Model Explainability (Feature Importance)")
-    st.markdown("The following features are the primary global drivers of the model's predictions, derived directly from the XGBoost feature weights:")
+    st.markdown("<h3 style='color: white; margin-top: 2rem;'>Model Explainability (Feature Importance)</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #d1d5db;'>The following features are the primary global drivers of the model's predictions, derived directly from the XGBoost feature weights:</p>", unsafe_allow_html=True)
     
     # Calculate and display top 5 features
     importances = model.feature_importances_
     features = model.feature_names_in_
     top_indices = np.argsort(importances)[::-1][:5]
     
-    html_list = "<ul style='color: #e6edf3; font-size: 1.1rem;'>"
+    html_list = "<ul style='color: #d1d5db; font-size: 1.1rem;'>"
     for idx in top_indices:
         feat = features[idx]
         clean_name = feat.replace('_', ' ').title()
@@ -432,11 +457,16 @@ with tab2:
     
     st.markdown(html_list, unsafe_allow_html=True)
     st.markdown("""
-    ### Key Features Analyzed:
-    * **Grid Position**: Where the driver starts heavily influences their finish trajectory.
-    * **Lap Time Variance**: A measure of consistency. Drivers with highly variable lap times generally struggle holding track position.
-    * **Pit Strategy**: Total time spent in the pits and the number of stops affect race delta times.
-    * **Circuit Dynamics**: Different tracks have different overtaking probabilities and degradation models, accounted for internally.
+    <div style='color: #d1d5db;'>
+    <h3 style='color: white; margin-top: 2rem;'>Key Features Analyzed:</h3>
+    <ul>
+        <li><strong>Grid Position:</strong> Where the driver starts heavily influences their finish trajectory.</li>
+        <li><strong>Lap Time Variance:</strong> A measure of consistency. Drivers with highly variable lap times generally struggle holding track position.</li>
+        <li><strong>Pit Strategy:</strong> Total time spent in the pits and the number of stops affect race delta times.</li>
+        <li><strong>Circuit Dynamics:</strong> Different tracks have different overtaking probabilities and degradation models, accounted for internally.</li>
+    </ul>
     
-    _Built by Nandini Patel | Powered by XGBoost and Streamlit_
-    """)
+    <br>
+    <em>Built by Nandini Patel | Powered by XGBoost and Streamlit</em>
+    </div>
+    """, unsafe_allow_html=True)
