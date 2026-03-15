@@ -387,33 +387,33 @@ with tab1:
                 alt_input_2.loc[0, 'total_pit_time'] = 24000
                 alt_proba_2 = model.predict_proba(alt_input_2)[0]
                 
-                st.markdown(f"""
-                <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #FF1801; margin-bottom: 1rem;'>
-                    <strong style='color: white;'>Scenario 1: What if they started on Pole (P1)?</strong><br>
-                    <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_1[0]*100:.1f}%</b>
-                </div>
-                
-                <div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffa726;'>
-                    <strong style='color: white;'>Scenario 2: What if they executed a perfect 1-Stop strategy?</strong><br>
-                    <span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_2[0]*100:.1f}%</b>
-                </div>
-                """, unsafe_allow_html=True)
+                scenario_html = (
+                    f"<div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #FF1801; margin-bottom: 1rem;'>"
+                    f"<strong style='color: white;'>Scenario 1: What if they started on Pole (P1)?</strong><br>"
+                    f"<span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_1[0]*100:.1f}%</b>"
+                    f"</div>"
+                    f"<div style='background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #ffa726;'>"
+                    f"<strong style='color: white;'>Scenario 2: What if they executed a perfect 1-Stop strategy?</strong><br>"
+                    f"<span style='color: #aaa;'>Podium Probability shifts from</span> <b style='color: white;'>{proba[0]*100:.1f}%</b> <span style='color: #aaa;'>to</span> <b style='color: #00e676;'>{alt_proba_2[0]*100:.1f}%</b>"
+                    f"</div>"
+                )
+                st.markdown(scenario_html, unsafe_allow_html=True)
                 
                 # --- CIRCUIT LAYOUT MAP ---
                 st.markdown('<div class="section-header" style="margin-top: 2rem;">CIRCUIT LAYOUT</div>', unsafe_allow_html=True)
                 svg_path = circuit_svgs.get(str(circuit_id))
                 if svg_path and os.path.exists(svg_path):
-                    with open(svg_path, 'r') as svg_file:
-                        svg_content = svg_file.read()
+                    with open(svg_path, 'rb') as svg_file:
+                        svg_b64 = base64.b64encode(svg_file.read()).decode('utf-8')
                     
-                    # Wrap SVG in a responsive container with a subtle background to improve visibility and layout
-                    st.markdown(f"""
-                    <div style='width: 100%; height: auto; max-height: 250px; display: flex; justify-content: center; align-items: center; padding: 20px; background: rgba(0,0,0,0.2)'>
-                        <div style='width: 80%; height: 100%;'>
-                            {svg_content}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    # Use an img tag with base64 data to safely sandbox the SVG from Streamlit's markdown parser
+                    # and ensure it respects the container bounds. Flatten the string to prevent markdown rendering errors.
+                    svg_html = (
+                        f"<div style='width: 100%; height: 250px; display: flex; justify-content: center; align-items: center; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 8px;'>"
+                        f"<img src='data:image/svg+xml;base64,{svg_b64}' style='max-width: 100%; max-height: 100%; object-fit: contain;' alt='Circuit Diagram'>"
+                        f"</div>"
+                    )
+                    st.markdown(svg_html, unsafe_allow_html=True)
                 else:
                     st.markdown("<p style='color: #aaa; text-align: center;'>Circuit map not available</p>", unsafe_allow_html=True)
                 
