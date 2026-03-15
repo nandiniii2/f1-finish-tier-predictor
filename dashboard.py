@@ -17,15 +17,12 @@ st.set_page_config(
 )
 
 @st.cache_data
-def get_base64_of_bin_url(url):
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        return base64.b64encode(urllib.request.urlopen(req).read()).decode()
-    except Exception:
-        return ""
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-bg_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/F1_2019_Schloss_Solitude_06.jpg/1920px-F1_2019_Schloss_Solitude_06.jpg"
-bg_b64 = get_base64_of_bin_url(bg_url)
+bg_b64 = get_base64_of_bin_file('assets/f1_bg.jpg')
 
 # === Inject Custom CSS for Premium F1 Aesthetic ===
 st.markdown("""
@@ -111,12 +108,16 @@ st.markdown("""
 st.markdown(f"""
     <style>
         /* Background for main area */
-        .stApp {{
+        [data-testid="stAppViewContainer"] {{
             background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("data:image/jpeg;base64,{bg_b64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-color: #111115 !important; 
+            background-color: transparent !important; 
+        }}
+        
+        [data-testid="stHeader"] {{
+            background-color: transparent !important;
         }}
     </style>
 """, unsafe_allow_html=True)
