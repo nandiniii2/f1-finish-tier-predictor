@@ -22,7 +22,7 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-bg_b64 = get_base64_of_bin_file('assets/f1_bg.jpg')
+bg_b64 = get_base64_of_bin_file('assets/f1_bg.png')
 
 # === Inject Custom CSS for Premium F1 Aesthetic ===
 st.markdown("""
@@ -109,7 +109,7 @@ st.markdown(f"""
     <style>
         /* Background for main area */
         [data-testid="stAppViewContainer"] {{
-            background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("data:image/jpeg;base64,{bg_b64}");
+            background-image: linear-gradient(rgba(17, 17, 21, 0.6), rgba(17, 17, 21, 0.8)), url("data:image/png;base64,{bg_b64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
